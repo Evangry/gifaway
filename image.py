@@ -1,5 +1,6 @@
 import imageio
 import numpy as np
+import scipy.ndimage as scnd
 
 class Image:
   def __init__(self, filename=None, base=None):
@@ -30,7 +31,7 @@ class Image:
   def base(self):
     return self._baseImage[:]
 
-  '''other: other image. x: x position of upper left of other. y: same but y coord.
+  '''other: other image. x/y: x/y position of upper left of other. (can be negative)
      alphas: whether it's going to act according to alpha values in self and other.'''
   def overlay(self, other, x, y, alphas=True):
     xend = min(x + other._baseImage.shape[1], self._baseImage.shape[1])
@@ -106,8 +107,28 @@ class Image:
   
     return blank.overlay(self, -x1, -y1, alphas = False)
 
+  ''' rolls the base by amount in the nesw direction.'''
+  def roll(self, amount, nesw):
+    if nesw.upper() == 'N':
+      return np.roll(self._baseImage, -amount, axis = 0)
+    if nesw.upper() == 'E':
+      return np.roll(self._baseImage, amount, axis = 1)
+    if nesw.upper() == 'S':
+      return np.roll(self._baseImage, amount, axis = 0)
+    if nesw.upper() == 'W':
+      return np.roll(self._baseImage, -amount, axis = 1)
+    return self.base()
+  
+  '''tilts image clockwise degrees. returns with transparent borders so that any angle would fit.'''
+  def tilt(self, degrees):
+    d = int(np.sqrt(self.size()[0]**2 + self.size()[1]**2) + 2)
+    ret = np.full((d, d, 4), np.uint8(0))
+    xmargin = (d - self.size()[1])//2
+    ymargin = (d - self.size()[0])//2
 
+    ret[ymargin:ymargin + self.size()[0], xmargin:xmargin + self.size()[1]] = self._baseImage
 
+    return scnd.rotate(ret, degrees, axes=(0,1), reshape=False)
 
 
 
