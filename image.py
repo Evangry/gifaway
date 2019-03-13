@@ -30,16 +30,40 @@ class Image:
   def base(self):
     return self._baseImage[:]
 
-  '''other: other image. x: x position of upper left of other. y: same but y coord.'''
-  def overlay(self, other, x, y):
+  '''other: other image. x: x position of upper left of other. y: same but y coord.
+     alphas: whether it's going to act according to alpha values in self and other.'''
+  def overlay(self, other, x, y, alphas=True):
     xend = min(x + other._baseImage.shape[1], self._baseImage.shape[1])
     yend = min(y + other._baseImage.shape[0], self._baseImage.shape[0])
 
+    otherx = max(0, -x)
+    othery = max(0, -y)
+
     otherxend = xend - x
     otheryend = yend - y
+
+    x = max(0, x)
+    y = max(0, y)
     
     left = self._baseImage[:,:x]
-    center = np.append(self._baseImage[:y,x:xend], other._baseImage[:otheryend,:otherxend], axis=0)
+    over = other._baseImage[othery:otheryend, otherx:otherxend]
+    if alphas:
+      for j in range(len(over)):
+        for i in range(len(over[j])):
+          pixel = over[j, i]
+          if (pixel[3] < 255):
+            back = self._baseImage[y+j, x+i]
+            totpow = min(pixel[3] + back[3], 255)
+            pixpow = pixel[3] /totpow
+            backpow = (totpow - pixpow) / totpow
+            pixel = np.array([np.uint8(pixel[k] * pixpow + back[k] * backpow) for k in range(4)])
+            pixel[3] = np.uint8(totpow)
+            over[j, i] = pixel
+  
+
+        
+
+    center = np.append(self._baseImage[:y,x:xend], over, axis=0)
     center = np.append(center, self._baseImage[yend:, x:xend], axis=0)
     right = np.append(center, self._baseImage[:,xend:], axis=1)
 
@@ -69,11 +93,21 @@ class Image:
       return np.append(other._baseImage, self._baseImage, axis=1)
     return self.base()
 
-  '''x: x size of the returned image. y: same but for y'''
+  '''this streches the image. x: x size of the returned image. y: same but for y'''
   def reshape(self, x, y):
     x1 = self.size()[1]
     y1 = self.size()[0]
     return np.array([[self._baseImage[int(j*y1/y),int(i*x1/x)] for i in range(x)] for j in range(y)])
+  
+  '''this resizes the image, adding alpha = 0 where the image isn't.
+     x1/y1: coords of upper left corner (may be negative). x2/y2 coords of bottom right.'''
+  def cropPad(self, x1, y1, x2, y2):
+    blank = Image(base = np.full((y2-y1, x2-x1, 4), np.uint8(0)))
+  
+    return blank.overlay(self, -x1, -y1, alphas = False)
+
+
+
 
 
 
