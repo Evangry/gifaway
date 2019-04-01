@@ -29,7 +29,7 @@ class Image:
     return self._baseImage.shape
 
   def base(self):
-    return self._baseImage[:]
+    return self._baseImage.copy()
 
   '''other: other image. x/y: x/y position of upper left of other. (can be negative)
      alphas: whether it's going to act according to alpha values in self and other.'''
@@ -54,9 +54,9 @@ class Image:
           pixel = over[j, i]
           if (pixel[3] < 255):
             back = self._baseImage[y+j, x+i]
-            totpow = min(pixel[3] + back[3], 255)
+            totpow = min(int(pixel[3]) + int(back[3]), 255)
             pixpow = pixel[3] /totpow
-            backpow = (totpow - pixpow) / totpow
+            backpow = (totpow - pixel[3]) / totpow
             pixel = np.array([np.uint8(pixel[k] * pixpow + back[k] * backpow) for k in range(4)])
             pixel[3] = np.uint8(totpow)
             over[j, i] = pixel
@@ -131,4 +131,13 @@ class Image:
     return scnd.rotate(ret, degrees, axes=(0,1), reshape=False)
 
 
+  def setOpacity(self, amount):
+    ret = self.base()
+    ret[:,:,3] = amount
+    return ret
+
+  def scaleRGBA(self, amount):
+    ret = self.base()
+    ret = ret * amount
+    return np.uint8(ret)
 
