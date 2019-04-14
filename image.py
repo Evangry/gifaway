@@ -130,14 +130,33 @@ class Image:
 
     return scnd.rotate(ret, degrees, axes=(0,1), reshape=False)
 
-
+  '''sets alpha value to amount. amount can also be a mask.'''
   def setOpacity(self, amount):
     ret = self.base()
     ret[:,:,3] = amount
     return ret
 
-  def scaleRGBA(self, amount):
+  '''scales RGBA by vector'''
+  def scaleRGBA(self, vector):
     ret = self.base()
-    ret = ret * amount
+    ret = ret * vector
     return np.uint8(ret)
+  
+  '''multiplies RGBA by matrix.'''
+  def alterRGBA(self, matrix):
+    ret = self.base()
+    ret = np.matmul(ret, matrix)
+    return np.uint8(ret)
+
+  '''usies condintion function to make a 2D mask of the image where truth is 255 and flase is 0'''
+  def maskFromCond(self, condition):
+    def newAlpha(rgba):
+      if condition(rgba):
+        return 255
+      else:
+        return 0
+
+    return np.array([[newAlpha(j) for j in i] for i in self._baseImage])
+
+
 
