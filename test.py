@@ -11,7 +11,14 @@ world2 = image.Image('pngs/world2.png')
 
 arr = np.array([[0, 0, 0, -0.5], [0, 1, 0, 1], [0, 0, 0, -0.5], [0, 0, 0, 0]])
 
-bloonUp = GifObj(image=bloon, fps=30, secs=1)
+bloonUp = gif.GifObj(image=bloon, fps=30, secs=3)
+#bloonUp.roll('N')
+#bloonUp.twirl('L')
+#bloonUp.colorShift()
 
-imageio.mimsave('test.gif', bloonup.getFrames(), duration = bloonUp.getDurations())
+worldWide = gif.GifObj(image=world, fps=24, secs=2)
+worldWide.colorShift()
 
+imageio.mimwrite('test.gif', worldWide.getFrames(), duration = worldWide.getDurations())
+
+#imageio.imwrite('test.png', bloonUp.getFrames()[17])
