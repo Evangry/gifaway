@@ -73,3 +73,16 @@ class GifObj:
 
       theImage = image.Image(base=self._frames[i])
       self._frames[i] = theImage.alterRGBA(matrix)
+
+  '''amount must be less than 0.5'''
+  def shake(self, xAmount, yAmount):
+    frames = []
+    for i in range(self._frameCount):
+      theImage = image.Image(base=self._frames[i])
+      x1 = int(np.random.rand() * xAmount * theImage.size()[1])
+      x2 = int(x1 + (1-xAmount) * theImage.size()[1])
+
+      y1 = int(np.random.rand() * yAmount * theImage.size()[0])
+      y2 = int(y1 + (1-yAmount) * theImage.size()[0])
+      frames.append(theImage.cropPad(x1, y1, x2, y2))
+    self._frames = np.array(frames)

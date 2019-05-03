@@ -16,8 +16,8 @@ bloonUp = gif.GifObj(image=bloon, fps=30, secs=3)
 #bloonUp.twirl('L')
 #bloonUp.colorShift()
 
-worldWide = gif.GifObj(image=world, fps=24, secs=2)
-worldWide.colorShift()
+worldWide = gif.GifObj(image=cat, fps=24, secs=2)
+worldWide.shake(0, 0.06)
 
 imageio.mimwrite('test.gif', worldWide.getFrames(), duration = worldWide.getDurations())
 

@@ -148,7 +148,7 @@ class Image:
     ret = np.matmul(ret, matrix)
     return np.uint8(ret)
 
-  '''usies condintion function to make a 2D mask of the image where truth is 255 and flase is 0'''
+  '''uses condintion function to make a 2D mask of the image where truth is 255 and flase is 0'''
   def maskFromCond(self, condition):
     def newAlpha(rgba):
       if condition(rgba):
