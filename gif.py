@@ -23,6 +23,15 @@ class GifObj:
 
   def getDurations(self):
     return self._durations
+
+  def scalarToX(self, scale):
+    return int(self._frames.shape[2] * scale)
+
+  def scalarToY(self, scale):
+    return int(self._frames.shape[1] * scale)
+
+  def size(self):
+    return self._frames.shape
   
   def roll(self, direction):
     horiz = 0
@@ -75,14 +84,48 @@ class GifObj:
       self._frames[i] = theImage.alterRGBA(matrix)
 
   '''amount must be less than 0.5'''
-  def shake(self, xAmount, yAmount):
+  def shake(self, xAmount, yAmount, scalars=False):
+    if (not scalars):
+      xAmount = xAmount/self.size()[2]
+      yAmount = yAmount/self.size()[1]
+
     frames = []
     for i in range(self._frameCount):
       theImage = image.Image(base=self._frames[i])
-      x1 = int(np.random.rand() * xAmount * theImage.size()[1])
-      x2 = int(x1 + (1-xAmount) * theImage.size()[1])
+      x1 = theImage.scalarToX(np.random.rand() * xAmount)
+      x2 = x1 + theImage.scalarToX(1-xAmount)
 
-      y1 = int(np.random.rand() * yAmount * theImage.size()[0])
-      y2 = int(y1 + (1-yAmount) * theImage.size()[0])
+      y1 = theImage.scalarToY(np.random.rand() * yAmount)
+      y2 = y1 + theImage.scalarToY(1-yAmount)
       frames.append(theImage.cropPad(x1, y1, x2, y2))
     self._frames = np.array(frames)
+
+  #overlay one gif on another
+  def overlay(self, other, x, y, alphas=True, scalars=False):
+    if(scalars):
+      x = self.scalarToX(x)
+      y = self.scalarToY(y)
+
+    frames = []
+    for i in range(self._frameCount):
+      theImage = image.Image(base=self._frames[i])
+      otherImage = image.Image(base=other.getFrames()[i])
+
+      frames.append(theImage.overlay(otherImage, x, y, alphas))
+    self._frames = np.array(frames)
+
+  #resize every image
+  def reshape(self, x, y, scalars=False):
+    if(scalars):
+      x = self.scalarToX(x)
+      y = self.scalarToY(y)
+
+    frames = []
+    for i in range(self._frameCount):
+      theImage = image.Image(base=self._frames[i])
+      frames.append(theImage.reshape(x, y))
+
+    self._frames = np.array(frames)
+
+  #change the number of frames and durations
+  #def retime(self, frames, durations)
